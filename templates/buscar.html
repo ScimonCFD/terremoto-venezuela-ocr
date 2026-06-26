@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Buscar persona — Listas Hospitalarias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #1565c0; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+    .header a { color: white; text-decoration: none; font-size: 1.2rem; }
+    .header h1 { font-size: 1.1rem; }
+    .search-box { background: white; padding: 20px 16px; border-bottom: 1px solid #eee; }
+    .search-box form { display: flex; gap: 8px; max-width: 480px; margin: 0 auto; }
+    .search-box input { flex: 1; padding: 12px 16px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; }
+    .search-box input:focus { outline: none; border-color: #1565c0; }
+    .search-box button { padding: 12px 20px; background: #1565c0; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .search-box button:hover { background: #0d47a1; }
+    .container { max-width: 480px; margin: 0 auto; padding: 16px; }
+    .aviso { background: #e3f2fd; border-left: 4px solid #1565c0; padding: 12px 16px; border-radius: 4px; font-size: 0.9rem; color: #1565c0; margin-bottom: 16px; }
+    .resultado { background: white; border-radius: 10px; padding: 18px; margin-bottom: 12px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .resultado .nombre { font-size: 1.1rem; font-weight: 700; color: #1565c0; margin-bottom: 8px; }
+    .resultado .hospital { font-size: 1rem; color: #222; margin-bottom: 6px; }
+    .resultado .detalles { font-size: 0.85rem; color: #666; }
+    .resultado .detalles span { margin-right: 12px; }
+    .badge { display: inline-block; font-size: 0.75rem; padding: 2px 8px; border-radius: 20px; background: #e8f5e9; color: #2e7d32; margin-left: 8px; }
+    .no-resultado { text-align: center; padding: 40px 20px; color: #888; }
+    .no-resultado p { margin-bottom: 8px; }
+    .no-resultado small { font-size: 0.85rem; }
+    .instruccion { text-align: center; padding: 40px 20px; color: #aaa; font-size: 0.95rem; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Listas Hospitalarias — Venezuela 2026</h1>
+  </div>
+
+  {% if total is not none %}
+  <div style="background:white; text-align:center; padding:10px; font-size:0.85rem; color:#555; border-bottom:1px solid #eee;">
+    <strong style="color:#1565c0;">{{ total }}</strong> personas registradas en <strong style="color:#1565c0;">{{ total_hospitales }}</strong> hospitales
+  </div>
+  {% endif %}
+
+  <div class="search-box">
+    <form method="get" action="/buscar">
+      <input type="text" name="q" placeholder="Escribe un nombre para buscar..." value="{{ query }}" autofocus autocomplete="off">
+      <button type="submit">Buscar</button>
+    </form>
+  </div>
+
+  <div class="container">
+    {% if query and not resultados %}
+      <div class="no-resultado">
+        <p>No se encontró <strong>{{ query }}</strong> en las listas digitalizadas.</p>
+        <small>Es posible que la lista de su hospital aún no haya sido subida al sistema.</small>
+      </div>
+
+    {% elif resultados %}
+      <div class="aviso">
+        La información disponible depende de lo que anotó cada hospital en su lista original.
+      </div>
+
+      {% for r in resultados %}
+      <div class="resultado">
+        <div class="nombre">
+          {{ r.nombre_completo }}
+          {% if r.similitud == 100 %}
+            <span class="badge" style="background:#e8f5e9;color:#2e7d32;">coincidencia exacta</span>
+          {% else %}
+            <span class="badge" style="background:#fff3e0;color:#e65100;">resultado aproximado — verificar</span>
+          {% endif %}
+        </div>
+        <div class="hospital">📍 {{ r.hospital }}</div>
+        <div class="detalles">
+          {% if r.cedula %}<span>CI: {{ r.cedula }}</span>{% endif %}
+          {% if r.edad %}<span>{{ r.edad }} años</span>{% endif %}
+          {% if r.sexo %}<span>{{ r.sexo }}</span>{% endif %}
+          {% if r.diagnostico %}<span>{{ r.diagnostico }}</span>{% endif %}
+          {% if r.fecha_lista %}<span>{{ r.fecha_lista }}</span>{% endif %}
+        </div>
+      </div>
+      {% endfor %}
+
+    {% else %}
+      <div class="instruccion">
+        Escribe el nombre de la persona que buscas.<br>
+        <small>Puedes escribir solo el nombre o solo el apellido.</small>
+      </div>
+    {% endif %}
+  </div>
+</body>
+</html>

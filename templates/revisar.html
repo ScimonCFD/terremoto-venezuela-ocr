@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Revisar lista — Listas Hospitalarias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #e65100; color: white; padding: 16px 20px; }
+    .header h1 { font-size: 1.1rem; }
+    .header p { font-size: 0.85rem; opacity: 0.9; margin-top: 4px; }
+    .container { max-width: 600px; margin: 0 auto; padding: 16px; }
+    .aviso { background: #fff3e0; border-left: 4px solid #e65100; padding: 12px 14px; border-radius: 4px; font-size: 0.88rem; color: #555; margin-bottom: 16px; }
+    table { width: 100%; border-collapse: collapse; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    thead { background: #f0f0f0; }
+    th { padding: 10px 8px; text-align: left; font-size: 0.8rem; color: #555; font-weight: 600; }
+    td { padding: 6px 8px; border-top: 1px solid #f0f0f0; }
+    input[type=text] { width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.88rem; }
+    input[type=text]:focus { outline: none; border-color: #e65100; }
+    select { padding: 5px 6px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.88rem; background: white; }
+    .col-eliminar { text-align: center; width: 36px; }
+    input[type=checkbox] { width: 16px; height: 16px; cursor: pointer; accent-color: #b71c1c; }
+    tr:has(input[type=checkbox]:checked) { background: #ffebee; opacity: 0.6; }
+    .acciones { display: flex; gap: 10px; }
+    .btn { flex: 1; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; text-align: center; border: none; cursor: pointer; }
+    .btn-confirmar { background: #2e7d32; color: white; }
+    .btn-confirmar:hover { background: #1b5e20; }
+    .btn-cancelar { background: #eee; color: #444; text-decoration: none; display: flex; align-items: center; justify-content: center; }
+    .conteo { font-size: 0.85rem; color: #888; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Revisar antes de guardar</h1>
+    <p>Foto {{ procesadas }} de {{ total }}</p>
+  </div>
+
+  <div class="container">
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}{% for m in messages %}<div style="background:#ffebee;border-left:4px solid #b71c1c;padding:10px 14px;border-radius:4px;font-size:.9rem;color:#b71c1c;margin-bottom:12px;">{{ m }}</div>{% endfor %}{% endif %}
+    {% endwith %}
+
+    <div class="aviso">
+      Revisa los nombres extraídos. Corrige errores directamente, o marca la casilla ✕ para eliminar filas incorrectas.
+    </div>
+
+    <div class="conteo">{{ datos.registros | length }} personas detectadas</div>
+
+    <form method="post">
+      <table>
+        <thead>
+          <tr>
+            <th colspan="5" style="background:#e8f5e9; padding:10px 8px;">
+              <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                <span style="font-weight:600; white-space:nowrap;">Hospital <span style="color:#b71c1c">*</span></span>
+                <input type="text" name="hospital" placeholder="Nombre del hospital" required
+                       list="hosp-lista" autocomplete="off"
+                       style="flex:1; min-width:180px; padding:6px 10px; border:2px solid #2e7d32; border-radius:6px; font-size:.9rem;">
+                <datalist id="hosp-lista">
+                  {% for h in hospitales %}<option value="{{ h }}">{% endfor %}
+                </datalist>
+                <input type="date" name="fecha" style="padding:6px 8px; border:1px solid #ccc; border-radius:6px; font-size:.9rem;">
+              </div>
+            </th>
+          </tr>
+        </thead>
+        <thead>
+          <tr style="background:#f0f0f0;">
+            <th>Nombre completo</th>
+            <th style="width:100px">Cédula</th>
+            <th style="width:55px">Edad</th>
+            <th style="width:50px">Sexo</th>
+            <th class="col-eliminar">✕</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in datos.registros %}
+          <tr>
+            <td><input type="text" name="nombre" value="{{ r.nombre_completo or '' }}"></td>
+            <td><input type="text" name="cedula" value="{{ r.cedula or '' }}" placeholder="—"></td>
+            <td><input type="text" name="edad" value="{{ r.edad or '' }}" placeholder="—"></td>
+            <td>
+              <select name="sexo">
+                <option value="">—</option>
+                <option value="F" {% if r.sexo == 'F' %}selected{% endif %}>F</option>
+                <option value="M" {% if r.sexo == 'M' %}selected{% endif %}>M</option>
+              </select>
+            </td>
+            <td class="col-eliminar">
+              <input type="checkbox" name="eliminar" value="{{ loop.index0 }}" title="Eliminar esta fila">
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+      <div class="acciones">
+        <a href="/subir" class="btn btn-cancelar">Cancelar</a>
+        <button type="submit" class="btn btn-confirmar">Guardar lista</button>
+      </div>
+    </form>
+  </div>
+</body>
+</html>

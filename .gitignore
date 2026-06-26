@@ -1,0 +1,19 @@
+# Base de datos — contiene datos de pacientes, no va en git
+hospital_data.db
+
+# Imágenes subidas — datos sensibles
+imagenes_web/
+imagenes/
+
+# API keys
+API_CLAUDE_TERREMOTO.txt
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+
+# Temporales
+/tmp/

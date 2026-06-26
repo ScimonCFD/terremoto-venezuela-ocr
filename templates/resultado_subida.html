@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lista procesada — Listas Hospitalarias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #2e7d32; color: white; padding: 16px 20px; display: flex; align-items: center; gap: 12px; }
+    .header a { color: white; text-decoration: none; font-size: 1.2rem; }
+    .header h1 { font-size: 1.1rem; }
+    .container { max-width: 480px; margin: 24px auto; padding: 0 16px; }
+    .resumen { background: white; border-radius: 12px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .resumen.ok { border-top: 4px solid #2e7d32; }
+    .resumen.duplicado { border-top: 4px solid #f9a825; }
+    .resumen h2 { font-size: 1.1rem; margin-bottom: 12px; }
+    .numero { font-size: 2rem; font-weight: 700; color: #2e7d32; }
+    .numero.warn { color: #f9a825; }
+    .detalle { font-size: 0.9rem; color: #666; margin-top: 4px; }
+    .personas { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); margin-bottom: 16px; }
+    .personas h3 { font-size: 0.95rem; color: #555; margin-bottom: 12px; }
+    .persona { padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+    .persona:last-child { border-bottom: none; }
+    .persona .pnombre { font-weight: 600; }
+    .persona .pdetalle { color: #888; font-size: 0.82rem; margin-top: 2px; }
+    .acciones { display: flex; flex-direction: column; gap: 10px; }
+    .btn { display: block; text-align: center; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; }
+    .btn-verde { background: #2e7d32; color: white; }
+    .btn-azul { background: #1565c0; color: white; }
+    .btn-gris { background: #eee; color: #444; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <a href="/">←</a>
+    <h1>Resultado</h1>
+  </div>
+
+  <div class="container">
+    {% if resultado.duplicado_imagen %}
+      <div class="resumen duplicado">
+        <h2>Esta foto ya fue procesada</h2>
+        <p class="detalle">Esta imagen ya estaba en el sistema, registrada bajo <strong>{{ resultado.hospital_original }}</strong>. No se agregaron registros duplicados.</p>
+      </div>
+    {% else %}
+      <div class="resumen ok">
+        <h2>Lista de {{ hospital }} procesada</h2>
+        <div class="numero">{{ resultado.insertados }}</div>
+        <div class="detalle">personas nuevas agregadas al sistema</div>
+        {% if resultado.duplicados > 0 %}
+          <div class="detalle" style="margin-top:8px; color:#f9a825;">
+            {{ resultado.duplicados }} personas ya estaban registradas de este hospital y fueron ignoradas.
+          </div>
+        {% endif %}
+      </div>
+
+      {% if resultado.registros %}
+        <div class="personas">
+          <h3>Personas agregadas:</h3>
+          {% for p in resultado.registros %}
+            <div class="persona">
+              <div class="pnombre">{{ p.nombre }}</div>
+              <div class="pdetalle">
+                {% if p.cedula %}CI: {{ p.cedula }} &nbsp;{% endif %}
+                {% if p.edad %}{{ p.edad }} años &nbsp;{% endif %}
+                {% if p.sexo %}{{ p.sexo }}{% endif %}
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    <div class="acciones">
+      <a href="/subir" class="btn btn-verde">📷 Subir otra lista</a>
+      <a href="/buscar" class="btn btn-azul">🔍 Buscar a alguien</a>
+      <a href="/" class="btn btn-gris">Inicio</a>
+    </div>
+  </div>
+</body>
+</html>

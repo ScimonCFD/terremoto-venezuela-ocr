@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listas Hospitalarias — Venezuela 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #b71c1c; color: white; padding: 20px; text-align: center; }
+    .header h1 { font-size: 1.4rem; font-weight: 700; }
+    .header p { font-size: 0.9rem; margin-top: 6px; opacity: 0.9; }
+    .stats { background: white; text-align: center; padding: 14px; font-size: 0.9rem; color: #555; border-bottom: 1px solid #eee; }
+    .stats strong { color: #b71c1c; }
+    .container { max-width: 480px; margin: 30px auto; padding: 0 16px; }
+    .card { background: white; border-radius: 12px; padding: 28px 24px; margin-bottom: 16px; text-decoration: none; color: inherit; display: block; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border: 2px solid transparent; transition: border-color 0.2s; }
+    .card:hover { border-color: #b71c1c; }
+    .card-icon { font-size: 2.4rem; margin-bottom: 12px; }
+    .card h2 { font-size: 1.2rem; margin-bottom: 8px; }
+    .card p { font-size: 0.9rem; color: #666; line-height: 1.5; }
+    .card.buscar .card-icon { color: #1565c0; }
+    .card.subir .card-icon { color: #2e7d32; }
+    .footer { text-align: center; font-size: 0.8rem; color: #aaa; margin-top: 30px; padding-bottom: 30px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Listas Hospitalarias</h1>
+    <p>Venezuela — Terremoto 2026</p>
+  </div>
+
+  <div class="stats">
+    <strong>{{ total }}</strong> personas registradas en <strong>{{ total_hospitales }}</strong> hospitales
+  </div>
+
+  <div class="container">
+    <a href="/buscar" class="card buscar">
+      <div class="card-icon">🔍</div>
+      <h2>Buscar a alguien</h2>
+      <p>Escribe el nombre de la persona que buscas. Consultamos todas las listas hospitaliarias digitalizadas.</p>
+    </a>
+
+    <a href="/subir" class="card subir">
+      <div class="card-icon">📷</div>
+      <h2>Subir una lista</h2>
+      <p>¿Tienes foto de una lista de un hospital? Súbela aquí para digitalizarla y que otros puedan buscar.</p>
+    </a>
+  </div>
+
+  <div class="footer">
+    Los datos provienen de listas oficiales de hospitales venezolanos.<br>
+    Si encuentras un error, contacta a los administradores.
+  </div>
+</body>
+</html>

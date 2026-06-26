@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Listo — Listas Hospitalarias</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #2e7d32; color: white; padding: 16px 20px; }
+    .header h1 { font-size: 1.1rem; }
+    .container { max-width: 480px; margin: 24px auto; padding: 0 16px; }
+    .total { background: white; border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-top: 4px solid #2e7d32; }
+    .numero { font-size: 2.5rem; font-weight: 700; color: #2e7d32; }
+    .detalle { color: #666; font-size: 0.9rem; margin-top: 4px; }
+    .lista { background: white; border-radius: 12px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+    .lista h3 { font-size: 0.9rem; color: #555; margin-bottom: 12px; }
+    .fila { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 0.9rem; }
+    .fila:last-child { border-bottom: none; }
+    .fila .hosp { font-weight: 600; }
+    .fila .num { color: #2e7d32; font-weight: 700; }
+    .fila .omitida { color: #aaa; font-style: italic; font-size: 0.82rem; }
+    .acciones { display: flex; flex-direction: column; gap: 10px; }
+    .btn { display: block; text-align: center; padding: 14px; border-radius: 8px; font-size: 1rem; font-weight: 600; text-decoration: none; }
+    .btn-verde { background: #2e7d32; color: white; }
+    .btn-azul { background: #1565c0; color: white; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Proceso completado</h1>
+  </div>
+
+  <div class="container">
+    <div class="total">
+      <div class="numero">{{ total_insertados }}</div>
+      <div class="detalle">personas nuevas agregadas al sistema</div>
+    </div>
+
+    {% if resumen %}
+    <div class="lista">
+      <h3>Detalle por foto:</h3>
+      {% for r in resumen %}
+      <div class="fila">
+        <span class="hosp">{{ r.hospital }}</span>
+        {% if r.omitida %}
+          <span class="omitida">ya procesada</span>
+        {% else %}
+          <span class="num">+{{ r.insertados }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="acciones">
+      <a href="/subir" class="btn btn-verde">📷 Subir más fotos</a>
+      <a href="/buscar" class="btn btn-azul">🔍 Ir a búsqueda</a>
+    </div>
+  </div>
+</body>
+</html>

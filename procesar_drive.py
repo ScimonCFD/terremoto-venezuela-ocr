@@ -35,9 +35,10 @@ Para cada persona extrae (usa null si no está visible):
 - sexo ("F" o "M")
 - diagnostico
 - notas
+- hospital (nombre del hospital si aparece en la imagen para ese registro, si no null)
 
 Responde ÚNICAMENTE con JSON válido:
-{"registros": [{"nombre_completo": "...", "cedula": "...", "edad": "...", "sexo": "...", "diagnostico": "...", "notas": "..."}]}"""
+{"registros": [{"nombre_completo": "...", "cedula": "...", "edad": "...", "sexo": "...", "diagnostico": "...", "notas": "...", "hospital": "..."}]}"""
 
 PROMPT_TEXTO = """Eres un asistente que extrae datos de listas médicas de hospitales venezolanos.
 
@@ -117,7 +118,12 @@ def guardar_registros(registros, hospital, fuente):
         nombre = (r.get("nombre_completo") or "").strip()
         if not nombre:
             continue
-        hosp = (r.get("hospital") or hospital or "").strip() or hospital
+        # Para archivos consolidados, usar el hospital que Claude extrajo de la imagen
+        # Para carpetas de hospital específico, siempre usar el nombre de la carpeta
+        if hospital == "CONSOLIDADO":
+            hosp = (r.get("hospital") or hospital or "").strip() or hospital
+        else:
+            hosp = hospital
         cedula = r.get("cedula") or None
 
         if cedula:

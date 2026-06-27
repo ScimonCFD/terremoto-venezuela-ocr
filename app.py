@@ -15,8 +15,18 @@ import sqlite3
 import uuid
 import tempfile
 import unicodedata
+import urllib.request
+import urllib.error
 from datetime import datetime
 from pathlib import Path
+
+# Carga .env si existe (para PythonAnywhere)
+_env_path = Path(__file__).parent / ".env"
+if _env_path.exists():
+    for _line in _env_path.read_text().splitlines():
+        if "=" in _line and not _line.startswith("#"):
+            _k, _v = _line.split("=", 1)
+            os.environ.setdefault(_k.strip(), _v.strip())
 
 import anthropic
 from flask import Flask, render_template, request, redirect, url_for, flash, g, session
@@ -213,7 +223,7 @@ def normalizar(texto):
     return texto
 
 
-def buscar_nombre(nombre, umbral=70):
+def buscar_nombre(nombre, umbral=80):
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
     todos = con.execute(
@@ -231,10 +241,14 @@ def buscar_nombre(nombre, umbral=70):
     resultados = []
     vistos = set()
     for i, n in enumerate(nombres_norm):
-        score = max(
-            fuzz.token_sort_ratio(query, n),
-            fuzz.partial_ratio(query, n)
-        )
+        score_sort = fuzz.token_sort_ratio(query, n)
+        # Solo usar partial_ratio si los nombres tienen longitud similar
+        # Evita que "RODRIGUEZ" dé 100% al buscar "Andrea Rodriguez"
+        len_ratio = min(len(query), len(n)) / max(len(query), len(n), 1)
+        if len_ratio >= 0.6:
+            score = max(score_sort, fuzz.partial_ratio(query, n))
+        else:
+            score = score_sort
         if score >= umbral and i not in vistos:
             vistos.add(i)
             r = dict(todos[i])
@@ -406,6 +420,10 @@ def revisar(token):
         ]
         session["procesadas"] = session.get("procesadas", 0) + 1
 
+        cola_restante = session.get("cola", [])
+        if not cola_restante:
+            exportar_a_github()
+
         return _siguiente_en_cola()
 
     procesadas = session.get("procesadas", 0)
@@ -433,6 +451,71 @@ def resumen_db():
     return total, total_hospitales, ultima
 
 
+def exportar_a_github():
+    gh_token = os.environ.get("GITHUB_TOKEN")
+    gh_repo = os.environ.get("GITHUB_REPO", "ScimonCFD/terremoto-venezuela-ocr")
+    if not gh_token:
+        return False
+
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    rows = con.execute("""
+        SELECT nombre_completo, cedula, edad, sexo, diagnostico,
+               hospital, fecha_lista, fuente_url
+        FROM registros ORDER BY hospital, nombre_completo
+    """).fetchall()
+    con.close()
+
+    registros = []
+    for r in rows:
+        fu = r["fuente_url"] or ""
+        if fu and not fu.startswith("http"):
+            fu = "https://listashospitalarias.pythonanywhere.com" + fu
+        registros.append({
+            "n": r["nombre_completo"] or "",
+            "h": r["hospital"] or "",
+            "ci": r["cedula"] or "",
+            "e": r["edad"] or "",
+            "s": r["sexo"] or "",
+            "d": r["diagnostico"] or "",
+            "f": r["fecha_lista"] or "",
+            "u": fu,
+        })
+
+    contenido = json.dumps(registros, ensure_ascii=False)
+    contenido_b64 = base64.b64encode(contenido.encode()).decode()
+
+    api_url = f"https://api.github.com/repos/{gh_repo}/contents/docs/data.json"
+    headers = {
+        "Authorization": f"token {gh_token}",
+        "Accept": "application/vnd.github.v3+json",
+        "Content-Type": "application/json",
+    }
+
+    try:
+        req = urllib.request.Request(api_url, headers=headers)
+        with urllib.request.urlopen(req) as resp:
+            actual = json.loads(resp.read())
+        sha = actual["sha"]
+    except urllib.error.HTTPError:
+        sha = None
+
+    payload = {
+        "message": f"Actualiza datos: {len(registros)} personas",
+        "content": contenido_b64,
+    }
+    if sha:
+        payload["sha"] = sha
+
+    data = json.dumps(payload).encode()
+    req = urllib.request.Request(api_url, data=data, headers=headers, method="PUT")
+    try:
+        with urllib.request.urlopen(req) as resp:
+            return resp.status in (200, 201)
+    except Exception:
+        return False
+
+
 @app.route("/buscar")
 def buscar():
     query = request.args.get("q", "").strip()
@@ -442,6 +525,106 @@ def buscar():
     total, total_hospitales, ultima = resumen_db()
     return render_template("buscar.html", query=query, resultados=resultados,
                            total=total, total_hospitales=total_hospitales, ultima=ultima)
+
+
+@app.route("/api/buscar")
+def api_buscar():
+    query = request.args.get("q", "").strip()
+    if not query:
+        return {"error": "Parámetro 'q' requerido. Ejemplo: /api/buscar?q=bolivar"}, 400
+    resultados = buscar_nombre(query)
+
+    # Deduplicar: si dos resultados del mismo hospital tienen nombres muy similares, quedarse con el primero
+    dedup = []
+    for r in resultados:
+        es_dup = False
+        for ya in dedup:
+            if ya["hospital"] == r["hospital"]:
+                score = fuzz.token_sort_ratio(normalizar(r["nombre_completo"]), normalizar(ya["nombre"]))
+                if score >= 90:
+                    es_dup = True
+                    break
+        if not es_dup:
+            dedup.append({
+                "nombre": r["nombre_completo"],
+                "hospital": r["hospital"],
+                "cedula": r["cedula"],
+                "edad": r["edad"],
+                "sexo": r["sexo"],
+                "diagnostico": r["diagnostico"],
+                "fecha_lista": r["fecha_lista"],
+                "similitud": r["similitud"],
+                "fuente_url": r["fuente_url"],
+            })
+
+    return {"query": query, "total": len(dedup), "resultados": dedup}
+
+
+@app.route("/api/cedula/<cedula>")
+def api_cedula(cedula):
+    cedula = cedula.strip().lstrip("VvEe-")
+    if not cedula.isdigit():
+        return {"error": "La cédula debe contener solo números."}, 400
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    rows = con.execute("""
+        SELECT nombre_completo, cedula, edad, sexo, diagnostico,
+               hospital, fecha_lista, fuente_url
+        FROM registros WHERE cedula = ?
+    """, (cedula,)).fetchall()
+    con.close()
+    resultados = [
+        {
+            "nombre": r["nombre_completo"],
+            "hospital": r["hospital"],
+            "cedula": r["cedula"],
+            "edad": r["edad"],
+            "sexo": r["sexo"],
+            "diagnostico": r["diagnostico"],
+            "fecha_lista": r["fecha_lista"],
+            "fuente_url": r["fuente_url"],
+        }
+        for r in rows
+    ]
+    return {"cedula": cedula, "total": len(resultados), "resultados": resultados}
+
+
+@app.route("/api/hospital")
+def api_hospital():
+    nombre_hospital = request.args.get("q", "").strip()
+    if not nombre_hospital:
+        # Si no se pasa parámetro, devuelve la lista de hospitales disponibles
+        con = sqlite3.connect(DB_PATH)
+        hospitales = [r[0] for r in con.execute(
+            "SELECT DISTINCT hospital FROM registros ORDER BY hospital"
+        ).fetchall()]
+        con.close()
+        return {"hospitales": hospitales, "total": len(hospitales)}
+
+    con = sqlite3.connect(DB_PATH)
+    con.row_factory = sqlite3.Row
+    rows = con.execute("""
+        SELECT nombre_completo, cedula, edad, sexo, diagnostico,
+               hospital, fecha_lista, fuente_url
+        FROM registros WHERE hospital = ?
+        ORDER BY nombre_completo
+    """, (nombre_hospital,)).fetchall()
+    con.close()
+
+    resultados = [
+        {
+            "nombre": r["nombre_completo"],
+            "hospital": r["hospital"],
+            "cedula": r["cedula"],
+            "edad": r["edad"],
+            "sexo": r["sexo"],
+            "diagnostico": r["diagnostico"],
+            "fecha_lista": r["fecha_lista"],
+            "fuente_url": r["fuente_url"],
+        }
+        for r in rows
+    ]
+    return {"hospital": nombre_hospital, "total": len(resultados), "resultados": resultados}
 
 
 init_db()

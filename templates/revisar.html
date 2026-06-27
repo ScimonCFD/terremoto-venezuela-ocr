@@ -54,12 +54,15 @@
             <th colspan="5" style="background:#e8f5e9; padding:10px 8px;">
               <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
                 <span style="font-weight:600; white-space:nowrap;">Hospital <span style="color:#b71c1c">*</span></span>
-                <input type="text" name="hospital" placeholder="Nombre del hospital" required
-                       list="hosp-lista" autocomplete="off"
-                       style="flex:1; min-width:180px; padding:6px 10px; border:2px solid #2e7d32; border-radius:6px; font-size:.9rem;">
-                <datalist id="hosp-lista">
-                  {% for h in hospitales %}<option value="{{ h }}">{% endfor %}
-                </datalist>
+                <select id="hosp-select" onchange="toggleNuevoHosp(this)"
+                        style="flex:1; min-width:180px; padding:6px 10px; border:2px solid #2e7d32; border-radius:6px; font-size:.9rem; background:white;">
+                  <option value="">— Selecciona un hospital —</option>
+                  {% for h in hospitales %}<option value="{{ h }}">{{ h }}</option>{% endfor %}
+                  <option value="__nuevo__">➕ Otro hospital (nuevo)...</option>
+                </select>
+                <input type="hidden" name="hospital" id="hosp-valor">
+                <input type="text" id="hosp-nuevo" placeholder="Escribe el nombre del hospital"
+                       style="display:none; flex:1; min-width:180px; padding:6px 10px; border:2px solid #f9a825; border-radius:6px; font-size:.9rem;">
                 <input type="date" name="fecha" style="padding:6px 8px; border:1px solid #ccc; border-radius:6px; font-size:.9rem;">
               </div>
             </th>
@@ -101,5 +104,41 @@
       </div>
     </form>
   </div>
+<script>
+function toggleNuevoHosp(sel) {
+  const nuevo = document.getElementById('hosp-nuevo');
+  const valor = document.getElementById('hosp-valor');
+  if (sel.value === '__nuevo__') {
+    nuevo.style.display = 'block';
+    nuevo.required = true;
+    nuevo.focus();
+    valor.value = '';
+  } else {
+    nuevo.style.display = 'none';
+    nuevo.required = false;
+    valor.value = sel.value;
+  }
+}
+
+document.querySelector('form').addEventListener('submit', function(e) {
+  const sel = document.getElementById('hosp-select');
+  const nuevo = document.getElementById('hosp-nuevo');
+  const valor = document.getElementById('hosp-valor');
+  if (sel.value === '__nuevo__') {
+    if (!nuevo.value.trim()) {
+      e.preventDefault();
+      nuevo.focus();
+      return;
+    }
+    valor.value = nuevo.value.trim();
+  } else if (!sel.value) {
+    e.preventDefault();
+    sel.focus();
+    return;
+  } else {
+    valor.value = sel.value;
+  }
+});
+</script>
 </body>
 </html>

@@ -12,6 +12,7 @@ import hashlib
 import base64
 import sqlite3
 import argparse
+import unicodedata
 from pathlib import Path
 from datetime import datetime
 
@@ -62,15 +63,29 @@ def init_db():
     con = sqlite3.connect(DB_PATH)
     con.execute("""CREATE TABLE IF NOT EXISTS registros (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        nombre_completo TEXT, cedula TEXT, edad TEXT, sexo TEXT,
+        nombre_completo TEXT, nombre_normalizado TEXT, cedula TEXT, edad TEXT, sexo TEXT,
         diagnostico TEXT, notas TEXT, hospital TEXT NOT NULL,
         fecha_lista TEXT, fuente_imagen TEXT, procesado_en TEXT)""")
     con.execute("""CREATE TABLE IF NOT EXISTS imagenes_procesadas (
         hash TEXT PRIMARY KEY, ruta TEXT, hospital TEXT, procesado_en TEXT)""")
+    # Agrega columna si la BD existente no la tiene
+    columnas = [r[1] for r in con.execute("PRAGMA table_info(registros)").fetchall()]
+    if "nombre_normalizado" not in columnas:
+        con.execute("ALTER TABLE registros ADD COLUMN nombre_normalizado TEXT")
     con.execute("CREATE INDEX IF NOT EXISTS idx_nombre ON registros(nombre_completo)")
+    con.execute("CREATE INDEX IF NOT EXISTS idx_nombre_norm ON registros(nombre_normalizado)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_hospital ON registros(hospital)")
     con.commit()
     con.close()
+
+
+def normalizar(texto):
+    if not texto:
+        return ""
+    texto = texto.lower().strip()
+    texto = unicodedata.normalize("NFD", texto)
+    texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    return texto
 
 
 def hash_bytes(data):
@@ -108,16 +123,19 @@ def guardar_registros(registros, hospital, fuente):
         if cedula:
             existe = con.execute("SELECT 1 FROM registros WHERE cedula=? AND hospital=?", (cedula, hosp)).fetchone()
         else:
-            existe = con.execute("SELECT 1 FROM registros WHERE nombre_completo=? AND hospital=?", (nombre, hosp)).fetchone()
+            existe = con.execute(
+                "SELECT 1 FROM registros WHERE nombre_normalizado=? AND hospital=?",
+                (normalizar(nombre), hosp)
+            ).fetchone()
 
         if existe:
             duplicados += 1
             continue
 
         con.execute("""INSERT INTO registros
-            (nombre_completo,cedula,edad,sexo,diagnostico,notas,hospital,fecha_lista,fuente_imagen,procesado_en)
-            VALUES (?,?,?,?,?,?,?,?,?,?)""",
-            (nombre, cedula, r.get("edad"), r.get("sexo"),
+            (nombre_completo,nombre_normalizado,cedula,edad,sexo,diagnostico,notas,hospital,fecha_lista,fuente_imagen,procesado_en)
+            VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+            (nombre, normalizar(nombre), cedula, r.get("edad"), r.get("sexo"),
              r.get("diagnostico"), r.get("notas"), hosp, hoy, fuente, ahora))
         insertados += 1
 

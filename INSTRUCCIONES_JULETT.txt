@@ -1,0 +1,47 @@
+LISTAS HOSPITALARIAS VENEZUELA 2026
+Instrucciones para Julett
+═══════════════════════════════════════════════════════
+
+PRIMERA VEZ (solo una vez):
+────────────────────────────
+
+1. Descarga el programa:
+   - Abre el navegador y ve a:
+     https://github.com/ScimonCFD/terremoto-venezuela-ocr
+   - Haz clic en el botón verde "Code"
+   - Haz clic en "Download ZIP"
+   - Descomprime el ZIP en una carpeta fácil de encontrar
+     (por ejemplo: C:\Usuarios\Julett\listas-hospitales)
+
+2. Instala el programa:
+   - Entra a la carpeta donde descomprimiste
+   - Haz doble clic en:  instalar_windows.bat
+   - Sigue las instrucciones en pantalla
+   - Cuando te pida la API key, escríbele a Simon
+
+CADA VEZ QUE QUIERAS PROCESAR FOTOS:
+──────────────────────────────────────
+
+1. Descarga las fotos/PDFs del Drive a tu computadora
+
+2. Haz doble clic en:  procesar.bat
+
+3. Arrastra la carpeta con las fotos a la ventana negra
+   y presiona Enter
+
+4. Espera a que termine (puede tardar varios minutos)
+
+5. Listo — los resultados ya están en la web:
+   listashospitalarias.pythonanywhere.com
+
+
+NOTAS IMPORTANTES:
+───────────────────
+- Necesitas internet para procesar
+- No cierres la ventana negra mientras procesa
+- Si ya procesaste unas fotos antes, el programa las salta
+  automáticamente — no se duplican
+- Si otra persona ya procesó algunas fotos, el programa
+  parte de donde ella dejó
+
+Para ayuda, escríbele a Simon.

@@ -5,8 +5,9 @@ hospital_data.db
 imagenes_web/
 imagenes/
 
-# API keys
+# API keys y tokens
 API_CLAUDE_TERREMOTO.txt
+PA_TOKEN.txt
 .env
 
 # Python

@@ -12,9 +12,20 @@ import sqlite3
 import argparse
 import csv
 import sys
+import unicodedata
 from rapidfuzz import fuzz, process
 
 DB_PATH = "hospital_data.db"
+
+
+def normalizar(texto):
+    """Minúsculas, sin acentos, sin caracteres especiales."""
+    if not texto:
+        return ""
+    texto = texto.lower()
+    texto = unicodedata.normalize("NFD", texto)
+    texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    return texto
 
 
 def cargar_todos(con):
@@ -36,21 +47,23 @@ def buscar_por_nombre(con, nombre, umbral=75):
     todos = cargar_todos(con)
     nombres = [r["nombre_completo"] or "" for r in todos]
 
-    resultados_fuzzy = process.extract(
-        nombre,
-        nombres,
-        scorer=fuzz.token_sort_ratio,
-        limit=10,
-    )
+    query = normalizar(nombre)
+    nombres_norm = [normalizar(n) for n in nombres]
 
     encontrados = []
-    for match_nombre, score, idx in resultados_fuzzy:
-        if score >= umbral:
-            r = todos[idx].copy()
+    vistos = set()
+    for i, n in enumerate(nombres_norm):
+        score = max(
+            fuzz.token_sort_ratio(query, n),
+            fuzz.partial_ratio(query, n)
+        )
+        if score >= umbral and i not in vistos:
+            vistos.add(i)
+            r = todos[i].copy()
             r["_similitud"] = score
             encontrados.append(r)
 
-    return sorted(encontrados, key=lambda x: x["_similitud"], reverse=True)
+    return sorted(encontrados, key=lambda x: x["_similitud"], reverse=True)[:10]
 
 
 def imprimir_registro(r):

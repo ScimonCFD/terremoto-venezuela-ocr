@@ -14,6 +14,7 @@ import base64
 import sqlite3
 import uuid
 import tempfile
+import unicodedata
 from datetime import datetime
 from pathlib import Path
 
@@ -203,6 +204,15 @@ def guardar_registros_confirmados(ruta, hospital, fecha, registros):
 
 # ── Búsqueda ──────────────────────────────────────────────────────────────────
 
+def normalizar(texto):
+    if not texto:
+        return ""
+    texto = texto.lower()
+    texto = unicodedata.normalize("NFD", texto)
+    texto = "".join(c for c in texto if unicodedata.category(c) != "Mn")
+    return texto
+
+
 def buscar_nombre(nombre, umbral=70):
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
@@ -215,16 +225,23 @@ def buscar_nombre(nombre, umbral=70):
         return []
 
     nombres = [r["nombre_completo"] or "" for r in todos]
-    matches = process.extract(nombre, nombres, scorer=fuzz.token_sort_ratio, limit=10)
+    query = normalizar(nombre)
+    nombres_norm = [normalizar(n) for n in nombres]
 
     resultados = []
-    for _, score, idx in matches:
-        if score >= umbral:
-            r = dict(todos[idx])
+    vistos = set()
+    for i, n in enumerate(nombres_norm):
+        score = max(
+            fuzz.token_sort_ratio(query, n),
+            fuzz.partial_ratio(query, n)
+        )
+        if score >= umbral and i not in vistos:
+            vistos.add(i)
+            r = dict(todos[i])
             r["similitud"] = round(score)
             resultados.append(r)
 
-    return sorted(resultados, key=lambda x: x["similitud"], reverse=True)
+    return sorted(resultados, key=lambda x: x["similitud"], reverse=True)[:10]
 
 
 def hospitales_existentes():

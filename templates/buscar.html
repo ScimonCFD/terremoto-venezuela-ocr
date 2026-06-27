@@ -82,6 +82,14 @@
           {% if r.diagnostico %}<span>{{ r.diagnostico }}</span>{% endif %}
           {% if r.fecha_lista %}<span>{{ r.fecha_lista }}</span>{% endif %}
         </div>
+        {% if r.fuente_url %}
+        <div style="margin-top:10px;">
+          <a href="{{ r.fuente_url }}" target="_blank"
+             style="font-size:0.82rem;color:#1565c0;text-decoration:none;border:1px solid #1565c0;padding:4px 10px;border-radius:6px;">
+            Ver lista original
+          </a>
+        </div>
+        {% endif %}
       </div>
       {% endfor %}
 

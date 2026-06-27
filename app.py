@@ -217,7 +217,7 @@ def buscar_nombre(nombre, umbral=70):
     con = sqlite3.connect(DB_PATH)
     con.row_factory = sqlite3.Row
     todos = con.execute(
-        "SELECT nombre_completo, cedula, edad, sexo, diagnostico, hospital, fecha_lista FROM registros"
+        "SELECT nombre_completo, cedula, edad, sexo, diagnostico, hospital, fecha_lista, fuente_url FROM registros"
     ).fetchall()
     con.close()
 

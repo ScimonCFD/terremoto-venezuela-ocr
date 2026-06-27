@@ -56,23 +56,23 @@
 
   <div class="container">
 
-    <details class="disclaimer">
-      <summary>⚠️ Información importante antes de buscar</summary>
-      <p style="margin-top:8px;">
-        Esta herramienta digitaliza las listas de pacientes publicadas por los hospitales usando
-        reconocimiento de texto automático. Esto significa que:
+    <div class="disclaimer">
+      <p style="font-weight:600; color:#333; margin-bottom:6px;">⚠️ Lee esto antes de buscar</p>
+      <p>
+        Esta herramienta digitaliza las listas de pacientes usando reconocimiento de texto automático.
+        Esto significa que:
       </p>
-      <ul style="margin: 8px 0 0 16px;">
+      <ul style="margin: 6px 0 6px 16px;">
         <li>Puede haber errores de lectura en nombres, edades o diagnósticos.</li>
-        <li>No están incluidas todas las listas de todos los hospitales.</li>
+        <li>No están incluidas las listas de todos los hospitales del país.</li>
         <li>La información puede haber cambiado desde que se publicó la lista original.</li>
-        <li>La ausencia de un nombre <strong>no confirma</strong> que la persona no esté hospitalizada.</li>
+        <li><strong>La ausencia de un nombre no confirma que la persona no esté hospitalizada.</strong></li>
       </ul>
-      <p style="margin-top:8px;">
-        Si encuentras un resultado aproximado, usa el botón <em>"Ver lista original"</em>
-        para confirmar con tus propios ojos. Ante cualquier duda, comunícate directamente con el hospital.
+      <p>
+        Si encuentras un resultado, usa <em>"Ver lista original"</em> para confirmarlo con tus propios ojos.
+        Ante cualquier duda, comunícate directamente con el hospital.
       </p>
-    </details>
+    </div>
 
     {% if query and not resultados %}
       <div class="no-resultado">

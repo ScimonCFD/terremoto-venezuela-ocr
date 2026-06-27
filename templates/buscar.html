@@ -28,6 +28,8 @@
     .no-resultado p { margin-bottom: 8px; }
     .no-resultado small { font-size: 0.85rem; }
     .instruccion { text-align: center; padding: 40px 20px; color: #aaa; font-size: 0.95rem; }
+    .disclaimer { background: #fff8e1; border-left: 4px solid #f9a825; padding: 12px 16px; border-radius: 4px; font-size: 0.82rem; color: #555; margin-bottom: 16px; line-height: 1.5; }
+    .disclaimer summary { font-weight: 600; color: #333; cursor: pointer; margin-bottom: 4px; }
   </style>
 </head>
 <body>
@@ -53,15 +55,35 @@
   </div>
 
   <div class="container">
+
+    <details class="disclaimer">
+      <summary>⚠️ Información importante antes de buscar</summary>
+      <p style="margin-top:8px;">
+        Esta herramienta digitaliza las listas de pacientes publicadas por los hospitales usando
+        reconocimiento de texto automático. Esto significa que:
+      </p>
+      <ul style="margin: 8px 0 0 16px;">
+        <li>Puede haber errores de lectura en nombres, edades o diagnósticos.</li>
+        <li>No están incluidas todas las listas de todos los hospitales.</li>
+        <li>La información puede haber cambiado desde que se publicó la lista original.</li>
+        <li>La ausencia de un nombre <strong>no confirma</strong> que la persona no esté hospitalizada.</li>
+      </ul>
+      <p style="margin-top:8px;">
+        Si encuentras un resultado aproximado, usa el botón <em>"Ver lista original"</em>
+        para confirmar con tus propios ojos. Ante cualquier duda, comunícate directamente con el hospital.
+      </p>
+    </details>
+
     {% if query and not resultados %}
       <div class="no-resultado">
         <p>No se encontró <strong>{{ query }}</strong> en las listas digitalizadas.</p>
-        <small>Es posible que la lista de su hospital aún no haya sido subida al sistema.</small>
+        <small>Prueba con solo el apellido, o con una variación del nombre.<br>
+        Si no aparece, es posible que esa lista aún no haya sido cargada al sistema.</small>
       </div>
 
     {% elif resultados %}
       <div class="aviso">
-        La información disponible depende de lo que anotó cada hospital en su lista original.
+        Verifica siempre con la lista original antes de confirmar. Los resultados aproximados pueden contener errores de lectura.
       </div>
 
       {% for r in resultados %}

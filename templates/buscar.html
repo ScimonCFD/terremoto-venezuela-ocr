@@ -37,7 +37,11 @@
 
   {% if total is not none %}
   <div style="background:white; text-align:center; padding:10px; font-size:0.85rem; color:#555; border-bottom:1px solid #eee;">
-    <strong style="color:#1565c0;">{{ total }}</strong> personas registradas en <strong style="color:#1565c0;">{{ total_hospitales }}</strong> hospitales
+    <strong style="color:#1565c0;">{{ total }}</strong> personas registradas en
+    <strong style="color:#1565c0;">{{ total_hospitales }}</strong> hospitales
+    {% if ultima %}
+    · actualizado {{ ultima[:10] }}
+    {% endif %}
   </div>
   {% endif %}
 

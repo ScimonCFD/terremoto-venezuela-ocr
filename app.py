@@ -259,11 +259,9 @@ def admin_autenticado():
 
 @app.route("/")
 def index():
-    con = sqlite3.connect(DB_PATH)
-    total = con.execute("SELECT COUNT(*) FROM registros").fetchone()[0]
-    total_hospitales = con.execute("SELECT COUNT(DISTINCT hospital) FROM registros").fetchone()[0]
-    con.close()
-    return render_template("buscar.html", query="", resultados=[], total=total, total_hospitales=total_hospitales)
+    total, total_hospitales, ultima = resumen_db()
+    return render_template("buscar.html", query="", resultados=[],
+                           total=total, total_hospitales=total_hospitales, ultima=ultima)
 
 
 @app.route("/admin", methods=["GET", "POST"])
@@ -426,13 +424,24 @@ def resumen_final():
     return render_template("resumen_final.html", resumen=resumen, total_insertados=total_insertados)
 
 
+def resumen_db():
+    con = sqlite3.connect(DB_PATH)
+    total = con.execute("SELECT COUNT(*) FROM registros").fetchone()[0]
+    total_hospitales = con.execute("SELECT COUNT(DISTINCT hospital) FROM registros").fetchone()[0]
+    ultima = con.execute("SELECT MAX(procesado_en) FROM registros").fetchone()[0]
+    con.close()
+    return total, total_hospitales, ultima
+
+
 @app.route("/buscar")
 def buscar():
     query = request.args.get("q", "").strip()
     resultados = []
     if query:
         resultados = buscar_nombre(query)
-    return render_template("buscar.html", query=query, resultados=resultados, total=None, total_hospitales=None)
+    total, total_hospitales, ultima = resumen_db()
+    return render_template("buscar.html", query=query, resultados=resultados,
+                           total=total, total_hospitales=total_hospitales, ultima=ultima)
 
 
 init_db()

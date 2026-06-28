@@ -93,8 +93,10 @@ fetch("data.json")
       ultimaFecha = data.reduce((max, r) => r.f > max ? r.f : max, "");
     }
 
+    const hospitales = new Set(data.map(r => r.h).filter(Boolean)).size;
     document.getElementById("banner").innerHTML =
-      `<strong style="color:#1565c0;">${totalRegistros}</strong> personas registradas` +
+      `<strong style="color:#1565c0;">${totalRegistros}</strong> personas registradas en ` +
+      `<strong style="color:#1565c0;">${hospitales}</strong> hospitales y refugios` +
       (ultimaFecha ? ` · actualizado ${ultimaFecha}` : "");
 
     fuse = new Fuse(data, {

@@ -63,6 +63,10 @@
   <div class="stat"><div class="num" id="stat-total">—</div><div class="label">coincidencias totales</div></div>
   <div class="stat"><div class="num" id="stat-sin">—</div><div class="label">aún sin contacto</div></div>
   <div class="stat"><div class="num" id="stat-loc">—</div><div class="label">localizados</div></div>
+  <div class="stat" style="margin-left:auto;" id="stat-fecha-bloque" hidden>
+    <div class="num" style="font-size:1rem;" id="stat-fecha">—</div>
+    <div class="label">última actualización de desaparecidos</div>
+  </div>
 </div>
 
 <div class="controles">
@@ -100,10 +104,15 @@ let ordenActual = 'nombre';
 let pagina = 1;
 const POR_PAGINA = 50;
 
-fetch('cruces.json')
+fetch('api/cruces.json')
   .then(r => r.json())
   .then(data => {
-    todos = data;
+    todos = data.cruces || data;
+    const fecha = data.ultima_actualizacion_desaparecidos;
+    if (fecha) {
+      document.getElementById('stat-fecha').textContent = fecha;
+      document.getElementById('stat-fecha-bloque').removeAttribute('hidden');
+    }
     document.getElementById('stat-total').textContent = todos.length;
     document.getElementById('stat-sin').textContent = todos.filter(x => x.estado === 'sin-contacto').length;
     document.getElementById('stat-loc').textContent = todos.filter(x => x.estado === 'localizado').length;

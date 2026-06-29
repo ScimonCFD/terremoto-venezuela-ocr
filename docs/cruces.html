@@ -198,7 +198,7 @@ function renderPagina() {
         ${telefono}
         <div class="links">
           ${btnHosp}
-          <button onclick="buscarEnDesaparecidos('${c.nombre.replace(/'/g, "\\'")}'')" class="btn-link btn-des">Buscar en desaparecidos</button>
+          <button data-nombre="${c.nombre.replace(/"/g, '&quot;')}" onclick="buscarEnDesaparecidos(this.dataset.nombre)" class="btn-link btn-des">Buscar en desaparecidos</button>
         </div>
       </div>`;
   }).join('');

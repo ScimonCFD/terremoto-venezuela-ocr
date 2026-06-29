@@ -187,14 +187,18 @@ function renderPagina() {
       : '';
     const fechaLista = c.fecha_lista ? `<span>Lista: ${c.fecha_lista.slice(0,10)}</span>` : '';
     const cedula = c.cedula ? `<span>CI: ${c.cedula}</span>` : '';
+    const telefono = c.telefono_contacto
+      ? `<div class="detalles" style="margin-top:4px;"><span>📞 ${c.telefono_contacto}${c.nombre_contacto ? ' (' + c.nombre_contacto + ')' : ''}</span></div>`
+      : '';
     return `
       <div class="resultado">
         <div class="nombre">${c.nombre} ${badge}</div>
         <div class="hospital-line">📍 ${c.hospital}</div>
         <div class="detalles">${cedula}${fechaLista}</div>
+        ${telefono}
         <div class="links">
           ${btnHosp}
-          <button onclick="buscarEnDesaparecidos('${c.nombre.replace(/'/g,"\\'")}'')" class="btn-link btn-des">Buscar en desaparecidos</button>
+          <button onclick="buscarEnDesaparecidos('${c.nombre.replace(/'/g, "\\'")}'')" class="btn-link btn-des">Buscar en desaparecidos</button>
         </div>
       </div>`;
   }).join('');

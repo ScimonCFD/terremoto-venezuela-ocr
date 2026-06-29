@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cruces con desaparecidos — Listas Hospitalarias Venezuela 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #6a1b9a; color: white; padding: 16px 20px; }
+    .header h1 { font-size: 1.1rem; }
+    .header p { font-size: 0.82rem; opacity: 0.85; margin-top: 4px; }
+    .nav { background: #4a148c; display: flex; gap: 4px; padding: 0 16px; }
+    .nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88rem; padding: 10px 14px; display: block; border-bottom: 3px solid transparent; }
+    .nav a:hover { color: white; }
+    .nav a.activo { color: white; border-bottom-color: white; }
+    .stats { background: white; border-bottom: 1px solid #eee; padding: 14px 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+    .stat .num { font-size: 1.5rem; font-weight: 700; color: #6a1b9a; }
+    .stat .label { font-size: 0.75rem; color: #888; }
+    .controles { background: white; padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .controles input[type=text] { flex: 1; min-width: 200px; padding: 7px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
+    .controles input[type=text]:focus { outline: none; border-color: #6a1b9a; }
+    .filtros { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .filtros span { font-size: 0.82rem; color: #aaa; }
+    .btn-filtro { padding: 6px 12px; border-radius: 20px; font-size: 0.82rem; border: 1px solid #ccc; color: #555; background: white; cursor: pointer; white-space: nowrap; }
+    .btn-filtro.activo { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+    .sep { color: #ddd; }
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+    .aviso { background: #f3e5f5; border-left: 4px solid #6a1b9a; padding: 12px 16px; border-radius: 4px; font-size: 0.85rem; color: #4a148c; margin-bottom: 16px; }
+    .resultado { background: white; border-radius: 10px; padding: 16px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .nombre { font-size: 1.05rem; font-weight: 700; color: #6a1b9a; margin-bottom: 6px; }
+    .hospital-line { font-size: 0.95rem; color: #333; margin-bottom: 4px; }
+    .detalles { font-size: 0.82rem; color: #777; margin-bottom: 8px; }
+    .detalles span { margin-right: 10px; }
+    .badge { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .badge-sin { background: #ffebee; color: #c62828; }
+    .badge-loc { background: #e8f5e9; color: #2e7d32; }
+    .badge-hosp { background: #e3f2fd; color: #1565c0; }
+    .links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-link { font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; text-decoration: none; border: 1px solid; cursor: pointer; background: none; font-family: inherit; }
+    .btn-hosp { color: #1565c0; border-color: #1565c0; }
+    .btn-des { color: #6a1b9a; border-color: #6a1b9a; }
+    .paginacion { display: flex; gap: 8px; justify-content: center; padding: 20px 0 32px; flex-wrap: wrap; }
+    .paginacion button { padding: 8px 14px; border-radius: 6px; border: 1px solid #ccc; color: #555; font-size: 0.9rem; cursor: pointer; background: white; }
+    .paginacion button.activo { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+    .empty { text-align: center; padding: 40px; color: #aaa; }
+    #cargando { text-align: center; padding: 40px; color: #888; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Desaparecidos en listas hospitalarias</h1>
+  <p>Personas reportadas como desaparecidas que aparecen en listas de hospitales y refugios</p>
+</div>
+<div class="nav">
+  <a href="index.html">Buscar</a>
+  <a href="cruces.html" class="activo">Cruces con desaparecidos</a>
+  <a href="api/">API</a>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="num" id="stat-total">—</div><div class="label">coincidencias totales</div></div>
+  <div class="stat"><div class="num" id="stat-sin">—</div><div class="label">aún sin contacto</div></div>
+  <div class="stat"><div class="num" id="stat-loc">—</div><div class="label">localizados</div></div>
+</div>
+
+<div class="controles">
+  <input type="text" id="buscador" placeholder="Buscar por nombre..." oninput="filtrarYRender()">
+  <div class="filtros">
+    <span>Estado:</span>
+    <button class="btn-filtro activo" onclick="setFiltro('', this)">Todos</button>
+    <button class="btn-filtro" onclick="setFiltro('sin-contacto', this)">Sin contacto</button>
+    <button class="btn-filtro" onclick="setFiltro('localizado', this)">Localizados</button>
+    <span class="sep">|</span>
+    <span>Orden:</span>
+    <button class="btn-filtro activo" onclick="setOrden('nombre', this)">Nombre</button>
+    <button class="btn-filtro" onclick="setOrden('fecha_desc', this)">Más reciente</button>
+    <button class="btn-filtro" onclick="setOrden('fecha_asc', this)">Más antiguo</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="aviso">
+    Coincidencias calculadas comparando nombres — puede haber personas distintas con el mismo nombre. Verifica siempre con la lista original.
+  </div>
+  <div id="cargando">Cargando datos...</div>
+  <div id="resultados"></div>
+  <div class="paginacion" id="paginacion"></div>
+  <div style="text-align:center; padding-bottom:32px; font-size:0.8rem; color:#aaa;">
+    Datos de desaparecidos: <a href="https://desaparecidosterremotovenezuela.com" style="color:#aaa;">desaparecidosterremotovenezuela.com</a>
+  </div>
+</div>
+
+<script>
+let todos = [];
+let filtrados = [];
+let filtroEstado = '';
+let ordenActual = 'nombre';
+let pagina = 1;
+const POR_PAGINA = 50;
+
+fetch('cruces.json')
+  .then(r => r.json())
+  .then(data => {
+    todos = data;
+    document.getElementById('stat-total').textContent = todos.length;
+    document.getElementById('stat-sin').textContent = todos.filter(x => x.estado === 'sin-contacto').length;
+    document.getElementById('stat-loc').textContent = todos.filter(x => x.estado === 'localizado').length;
+    document.getElementById('cargando').style.display = 'none';
+    filtrarYRender();
+  })
+  .catch(() => {
+    document.getElementById('cargando').textContent = 'Error cargando datos.';
+  });
+
+function setFiltro(estado, btn) {
+  filtroEstado = estado;
+  document.querySelectorAll('.filtros .btn-filtro').forEach(b => {
+    if (b.textContent.match(/Todos|Sin contacto|Localizados/)) b.classList.remove('activo');
+  });
+  btn.classList.add('activo');
+  pagina = 1;
+  filtrarYRender();
+}
+
+function setOrden(orden, btn) {
+  ordenActual = orden;
+  document.querySelectorAll('.filtros .btn-filtro').forEach(b => {
+    if (b.textContent.match(/Nombre|reciente|antiguo/)) b.classList.remove('activo');
+  });
+  btn.classList.add('activo');
+  filtrarYRender();
+}
+
+function normalizar(t) {
+  return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function filtrarYRender() {
+  const q = normalizar(document.getElementById('buscador').value);
+  filtrados = todos.filter(c => {
+    if (filtroEstado && c.estado !== filtroEstado) return false;
+    if (q && !normalizar(c.nombre).includes(q)) return false;
+    return true;
+  });
+
+  filtrados.sort((a, b) => {
+    if (ordenActual === 'fecha_desc') return (b.fecha_lista || '').localeCompare(a.fecha_lista || '');
+    if (ordenActual === 'fecha_asc') return (a.fecha_lista || '').localeCompare(b.fecha_lista || '');
+    return (a.nombre || '').localeCompare(b.nombre || '');
+  });
+
+  renderPagina();
+}
+
+function renderPagina() {
+  const inicio = (pagina - 1) * POR_PAGINA;
+  const slice = filtrados.slice(inicio, inicio + POR_PAGINA);
+  const div = document.getElementById('resultados');
+
+  if (!filtrados.length) {
+    div.innerHTML = '<div class="empty">No hay coincidencias.</div>';
+    document.getElementById('paginacion').innerHTML = '';
+    return;
+  }
+
+  div.innerHTML = slice.map(c => {
+    const badge = c.estado === 'sin-contacto'
+      ? '<span class="badge badge-sin">sin contacto</span>'
+      : c.estado === 'localizado'
+      ? '<span class="badge badge-loc">localizado</span>'
+      : c.estado === 'en-hospital'
+      ? '<span class="badge badge-hosp">en hospital</span>'
+      : '';
+    const btnHosp = c.fuente_url
+      ? `<a href="${c.fuente_url}" target="_blank" class="btn-link btn-hosp">Ver lista hospitalaria</a>`
+      : '';
+    const fechaLista = c.fecha_lista ? `<span>Lista: ${c.fecha_lista.slice(0,10)}</span>` : '';
+    const cedula = c.cedula ? `<span>CI: ${c.cedula}</span>` : '';
+    return `
+      <div class="resultado">
+        <div class="nombre">${c.nombre} ${badge}</div>
+        <div class="hospital-line">📍 ${c.hospital}</div>
+        <div class="detalles">${cedula}${fechaLista}</div>
+        <div class="links">
+          ${btnHosp}
+          <button onclick="buscarEnDesaparecidos('${c.nombre.replace(/'/g,"\\'")}'')" class="btn-link btn-des">Buscar en desaparecidos</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  const totalPags = Math.ceil(filtrados.length / POR_PAGINA);
+  const pag = document.getElementById('paginacion');
+  if (totalPags <= 1) { pag.innerHTML = ''; return; }
+  let html = '';
+  if (pagina > 1) html += `<button onclick="irPagina(${pagina-1})">← Anterior</button>`;
+  html += `<button class="activo">${pagina} / ${totalPags}</button>`;
+  if (pagina < totalPags) html += `<button onclick="irPagina(${pagina+1})">Siguiente →</button>`;
+  pag.innerHTML = html;
+}
+
+function irPagina(n) {
+  pagina = n;
+  renderPagina();
+  window.scrollTo(0, 0);
+}
+
+function buscarEnDesaparecidos(nombre) {
+  navigator.clipboard.writeText(nombre).then(() => {
+    window.open('https://desaparecidosterremotovenezuela.com', '_blank');
+    setTimeout(() => alert('El nombre "' + nombre + '" fue copiado.\nPégalo en el buscador (Ctrl+V).'), 300);
+  }).catch(() => window.open('https://desaparecidosterremotovenezuela.com', '_blank'));
+}
+</script>
+</body>
+</html>

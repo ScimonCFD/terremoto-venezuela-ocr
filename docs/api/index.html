@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API — Listas Hospitalarias Venezuela 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; line-height: 1.6; }
+    .header { background: #1565c0; color: white; padding: 20px 24px; }
+    .header h1 { font-size: 1.2rem; }
+    .header p { font-size: 0.85rem; opacity: 0.85; margin-top: 4px; }
+    .nav { background: #0d47a1; display: flex; gap: 4px; padding: 0 16px; }
+    .nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88rem; padding: 10px 14px; display: block; border-bottom: 3px solid transparent; }
+    .nav a:hover { color: white; }
+    .nav a.activo { color: white; border-bottom-color: white; }
+    .container { max-width: 780px; margin: 0 auto; padding: 24px 16px 48px; }
+    .intro { background: white; border-radius: 10px; padding: 20px; margin-bottom: 24px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); font-size: 0.92rem; color: #444; }
+    .intro p { margin-bottom: 8px; }
+    h2 { font-size: 1rem; color: #888; text-transform: uppercase; letter-spacing: 0.05em; margin: 32px 0 12px; }
+    .endpoint { background: white; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); overflow: hidden; }
+    .endpoint-header { padding: 14px 18px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f0f0f0; flex-wrap: wrap; }
+    .method { background: #e8f5e9; color: #2e7d32; font-size: 0.78rem; font-weight: 700; padding: 3px 8px; border-radius: 4px; font-family: monospace; }
+    .path { font-family: monospace; font-size: 0.95rem; color: #1565c0; font-weight: 600; }
+    .desc { font-size: 0.88rem; color: #666; }
+    .endpoint-body { padding: 14px 18px; }
+    .fields { margin-bottom: 12px; }
+    .fields h4 { font-size: 0.8rem; color: #999; text-transform: uppercase; margin-bottom: 8px; }
+    .field { display: flex; gap: 12px; font-size: 0.85rem; margin-bottom: 5px; }
+    .field-name { font-family: monospace; color: #6a1b9a; min-width: 80px; }
+    .field-desc { color: #555; }
+    .ejemplo h4 { font-size: 0.8rem; color: #999; text-transform: uppercase; margin-bottom: 6px; }
+    .code { background: #1e1e2e; color: #cdd6f4; font-family: monospace; font-size: 0.82rem; padding: 12px 16px; border-radius: 6px; overflow-x: auto; white-space: pre; }
+    .code .cmd { color: #89b4fa; }
+    .code .url { color: #a6e3a1; }
+    .code .comment { color: #585b70; }
+    .download-btn { display: inline-block; margin-top: 10px; padding: 8px 16px; background: #1565c0; color: white; border-radius: 6px; text-decoration: none; font-size: 0.85rem; }
+    .download-btn:hover { background: #0d47a1; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <h1>API — Listas Hospitalarias Venezuela 2026</h1>
+  <p>Acceso programático a los datos de pacientes en hospitales y refugios</p>
+</div>
+<div class="nav">
+  <a href="../index.html">Buscar</a>
+  <a href="../cruces.html">Cruces con desaparecidos</a>
+  <a href="index.html" class="activo">API</a>
+</div>
+
+<div class="container">
+
+  <div class="intro">
+    <p>Los datos están disponibles como archivos JSON estáticos, sin necesidad de autenticación ni clave API. Se actualizan cada vez que se agregan nuevas listas al sistema.</p>
+    <p>Base URL: <strong>https://scimoncfd.github.io/terremoto-venezuela-ocr</strong></p>
+  </div>
+
+  <h2>Archivos disponibles</h2>
+
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method">GET</span>
+      <span class="path">/data.json</span>
+      <span class="desc">Todos los registros hospitalarios</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="fields">
+        <h4>Campos</h4>
+        <div class="field"><span class="field-name">n</span><span class="field-desc">Nombre completo</span></div>
+        <div class="field"><span class="field-name">h</span><span class="field-desc">Hospital o refugio</span></div>
+        <div class="field"><span class="field-name">ci</span><span class="field-desc">Cédula de identidad</span></div>
+        <div class="field"><span class="field-name">e</span><span class="field-desc">Edad</span></div>
+        <div class="field"><span class="field-name">s</span><span class="field-desc">Sexo (M/F)</span></div>
+        <div class="field"><span class="field-name">d</span><span class="field-desc">Diagnóstico</span></div>
+        <div class="field"><span class="field-name">f</span><span class="field-desc">Fecha de la lista</span></div>
+        <div class="field"><span class="field-name">u</span><span class="field-desc">URL de la lista original (imagen o PDF)</span></div>
+      </div>
+      <div class="ejemplo">
+        <h4>Ejemplo</h4>
+        <div class="code"><span class="cmd">curl</span> <span class="url">"https://scimoncfd.github.io/terremoto-venezuela-ocr/data.json"</span></div>
+      </div>
+      <a href="../data.json" download class="download-btn">Descargar data.json</a>
+    </div>
+  </div>
+
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method">GET</span>
+      <span class="path">/api/cruces.json</span>
+      <span class="desc">Personas en hospitales también reportadas como desaparecidas</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="fields">
+        <h4>Campos</h4>
+        <div class="field"><span class="field-name">nombre</span><span class="field-desc">Nombre completo</span></div>
+        <div class="field"><span class="field-name">hospital</span><span class="field-desc">Hospital o refugio donde aparece</span></div>
+        <div class="field"><span class="field-name">cedula</span><span class="field-desc">Cédula de identidad</span></div>
+        <div class="field"><span class="field-name">estado</span><span class="field-desc"><code>sin-contacto</code>, <code>localizado</code> o <code>en-hospital</code></span></div>
+        <div class="field"><span class="field-name">fecha_lista</span><span class="field-desc">Fecha de la lista hospitalaria</span></div>
+        <div class="field"><span class="field-name">fecha_reporte</span><span class="field-desc">Fecha en que fue reportado como desaparecido</span></div>
+        <div class="field"><span class="field-name">fuente_url</span><span class="field-desc">URL de la lista hospitalaria original</span></div>
+      </div>
+      <div class="ejemplo">
+        <h4>Ejemplo</h4>
+        <div class="code"><span class="cmd">curl</span> <span class="url">"https://scimoncfd.github.io/terremoto-venezuela-ocr/api/cruces.json"</span>
+
+<span class="comment"># Solo los que aún no tienen contacto (con jq)</span>
+<span class="cmd">curl</span> <span class="url">"https://scimoncfd.github.io/terremoto-venezuela-ocr/api/cruces.json"</span> | jq '[.[] | select(.estado == "sin-contacto")]'</div>
+      </div>
+      <a href="cruces.json" download class="download-btn">Descargar cruces.json</a>
+    </div>
+  </div>
+
+  <div style="margin-top:32px; font-size:0.82rem; color:#aaa; text-align:center; line-height:1.8;">
+    Datos actualizados voluntariamente · Contacto:
+    <a href="mailto:listashospitalarias@proton.me" style="color:#aaa;">listashospitalarias@proton.me</a>
+  </div>
+
+</div>
+</body>
+</html>

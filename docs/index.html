@@ -188,7 +188,7 @@ function ejecutarBusqueda(q) {
     html += `
       <div class="resultado ${esMenor ? 'resultado-menor' : ''}">
         <div class="nombre">${item.n} ${badge} ${badgeMenor}</div>
-        <div class="hospital">📍 ${item.h}</div>
+        ${esMenor ? '' : `<div class="hospital">📍 ${item.h}</div>`}
         ${cuerpo}
       </div>`;
   }

@@ -29,6 +29,8 @@
     .no-resultado { text-align: center; padding: 40px 20px; color: #888; }
     .instruccion { text-align: center; padding: 40px 20px; color: #aaa; font-size: 0.95rem; }
     .footer { text-align: center; padding: 24px 16px 32px; font-size: 0.8rem; color: #aaa; line-height: 1.6; }
+    .resultado-menor { border-left: 4px solid #e53935; }
+    .aviso-menor { background: #fff3e0; border: 1px solid #ffb74d; border-radius: 8px; padding: 12px 14px; margin-top: 10px; font-size: 0.83rem; color: #555; line-height: 1.6; }
     #cargando { text-align: center; padding: 20px; color: #888; }
     .nav { background: #0d47a1; display: flex; gap: 4px; padding: 0 16px; }
     .nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88rem; padding: 10px 14px; display: block; border-bottom: 3px solid transparent; }
@@ -161,26 +163,33 @@ function ejecutarBusqueda(q) {
       ? `<span class="badge-exacto">coincidencia exacta</span>`
       : `<span class="badge-aprox">resultado aproximado — verificar</span>`;
 
-    const detalles = [
-      item.ci ? `CI: ${item.ci}` : "",
-      item.e ? `${item.e} años` : "",
-      item.s || "",
-      item.d || "",
-      item.f || "",
-    ].filter(Boolean).map(d => `<span>${d}</span>`).join("");
+    const esMenor = item.e && !isNaN(parseInt(item.e)) && parseInt(item.e) < 18;
+    const badgeMenor = esMenor ? `<span class="badge-aprox" style="background:#ffebee;color:#c62828;">menor de edad</span>` : "";
 
-    const linkFuente = item.u
-      ? `<div style="margin-top:10px;"><a href="${item.u}" target="_blank"
+    const cuerpo = esMenor
+      ? `<div class="aviso-menor">
+           🔒 <strong>Información protegida.</strong> Esta persona es menor de edad. Sus datos están ocultos para proteger su seguridad.<br>
+           Si eres familiar, comunícate a
+           <a href="mailto:listashospitalarias@proton.me" style="color:#e65100;font-weight:600;">listashospitalarias@proton.me</a>
+           y te ayudaremos.
+         </div>`
+      : `<div class="detalles">${[
+            item.ci ? `CI: ${item.ci}` : "",
+            item.e ? `${item.e} años` : "",
+            item.s || "",
+            item.d || "",
+            item.f || "",
+          ].filter(Boolean).map(d => `<span>${d}</span>`).join("")}
+         </div>
+         ${item.u ? `<div style="margin-top:10px;"><a href="${item.u}" target="_blank"
            style="font-size:0.82rem;color:#1565c0;text-decoration:none;border:1px solid #1565c0;padding:4px 10px;border-radius:6px;">
-           Ver lista original</a></div>`
-      : "";
+           Ver lista original</a></div>` : ""}`;
 
     html += `
-      <div class="resultado">
-        <div class="nombre">${item.n} ${badge}</div>
+      <div class="resultado ${esMenor ? 'resultado-menor' : ''}">
+        <div class="nombre">${item.n} ${badge} ${badgeMenor}</div>
         <div class="hospital">📍 ${item.h}</div>
-        <div class="detalles">${detalles}</div>
-        ${linkFuente}
+        ${cuerpo}
       </div>`;
   }
 

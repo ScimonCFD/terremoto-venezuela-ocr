@@ -180,7 +180,7 @@ async function entrar() {
   document.getElementById('login-error').style.display = 'none';
 
   try {
-    const resp = await fetch('api/cruces_enc.json');
+    const resp = await fetch('api/cruces_enc.json', {cache: 'no-cache'});
     const enc = await resp.json();
     const data = await descifrar(clave, enc.data);
     cargarDatos(data);

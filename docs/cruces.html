@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cruces con desaparecidos — Listas Hospitalarias Venezuela 2026</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: system-ui, sans-serif; background: #f5f5f5; color: #222; }
+    .header { background: #6a1b9a; color: white; padding: 16px 20px; }
+    .header h1 { font-size: 1.1rem; }
+    .header p { font-size: 0.82rem; opacity: 0.85; margin-top: 4px; }
+    .nav { background: #4a148c; display: flex; gap: 4px; padding: 0 16px; }
+    .nav a { color: rgba(255,255,255,0.75); text-decoration: none; font-size: 0.88rem; padding: 10px 14px; display: block; border-bottom: 3px solid transparent; }
+    .nav a:hover { color: white; }
+    .nav a.activo { color: white; border-bottom-color: white; }
+
+    /* Login */
+    #pantalla-login { display: flex; align-items: center; justify-content: center; min-height: 60vh; }
+    .login-card { background: white; border-radius: 12px; padding: 36px 32px; box-shadow: 0 2px 16px rgba(0,0,0,0.1); max-width: 360px; width: 100%; }
+    .login-icono { font-size: 2.5rem; text-align: center; margin-bottom: 16px; }
+    .login-card h2 { font-size: 1.1rem; color: #4a148c; text-align: center; margin-bottom: 6px; }
+    .login-card p { font-size: 0.84rem; color: #888; text-align: center; margin-bottom: 24px; line-height: 1.5; }
+    .login-card label { font-size: 0.84rem; color: #555; display: block; margin-bottom: 6px; }
+    .login-card input { width: 100%; padding: 10px 14px; border: 2px solid #ddd; border-radius: 8px; font-size: 1rem; margin-bottom: 14px; }
+    .login-card input:focus { outline: none; border-color: #6a1b9a; }
+    .login-card button { width: 100%; padding: 11px; background: #6a1b9a; color: white; border: none; border-radius: 8px; font-size: 1rem; cursor: pointer; }
+    .login-card button:hover { background: #4a148c; }
+    .login-card button:disabled { background: #aaa; cursor: default; }
+    .login-error { background: #ffebee; color: #c62828; border-radius: 6px; padding: 10px 14px; font-size: 0.84rem; margin-bottom: 14px; display: none; }
+
+    /* App */
+    #pantalla-app { display: none; }
+    .stats { background: white; border-bottom: 1px solid #eee; padding: 14px 20px; display: flex; gap: 24px; flex-wrap: wrap; }
+    .stat .num { font-size: 1.5rem; font-weight: 700; color: #6a1b9a; }
+    .stat .label { font-size: 0.75rem; color: #888; }
+    .controles { background: white; padding: 12px 20px; border-bottom: 1px solid #eee; display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .controles input[type=text] { flex: 1; min-width: 200px; padding: 7px 12px; border: 2px solid #ddd; border-radius: 8px; font-size: 0.9rem; }
+    .controles input[type=text]:focus { outline: none; border-color: #6a1b9a; }
+    .filtros { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+    .filtros span { font-size: 0.82rem; color: #aaa; }
+    .btn-filtro { padding: 6px 12px; border-radius: 20px; font-size: 0.82rem; border: 1px solid #ccc; color: #555; background: white; cursor: pointer; white-space: nowrap; }
+    .btn-filtro.activo { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+    .sep { color: #ddd; }
+    .container { max-width: 700px; margin: 0 auto; padding: 16px; }
+    .aviso { background: #f3e5f5; border-left: 4px solid #6a1b9a; padding: 12px 16px; border-radius: 4px; font-size: 0.85rem; color: #4a148c; margin-bottom: 16px; }
+    .resultado { background: white; border-radius: 10px; padding: 16px; margin-bottom: 10px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .resultado-menor { border-left: 4px solid #e53935; }
+    .nombre { font-size: 1.05rem; font-weight: 700; color: #6a1b9a; margin-bottom: 6px; }
+    .hospital-line { font-size: 0.95rem; color: #333; margin-bottom: 4px; }
+    .detalles { font-size: 0.82rem; color: #777; margin-bottom: 8px; }
+    .detalles span { margin-right: 10px; }
+    .badge { display: inline-block; font-size: 0.72rem; padding: 2px 8px; border-radius: 20px; margin-left: 6px; }
+    .badge-sin { background: #ffebee; color: #c62828; }
+    .badge-loc { background: #e8f5e9; color: #2e7d32; }
+    .badge-hosp { background: #e3f2fd; color: #1565c0; }
+    .badge-menor { background: #ffebee; color: #c62828; }
+    .links { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-link { font-size: 0.8rem; padding: 4px 10px; border-radius: 6px; text-decoration: none; border: 1px solid; cursor: pointer; background: none; font-family: inherit; }
+    .btn-hosp { color: #1565c0; border-color: #1565c0; }
+    .btn-des { color: #6a1b9a; border-color: #6a1b9a; }
+    .aviso-menor { background: #fff3e0; border: 1px solid #ffb74d; border-radius: 8px; padding: 12px 14px; margin-top: 8px; font-size: 0.83rem; color: #555; line-height: 1.6; }
+    .paginacion { display: flex; gap: 8px; justify-content: center; padding: 20px 0 32px; flex-wrap: wrap; }
+    .paginacion button { padding: 8px 14px; border-radius: 6px; border: 1px solid #ccc; color: #555; font-size: 0.9rem; cursor: pointer; background: white; }
+    .paginacion button.activo { background: #6a1b9a; color: white; border-color: #6a1b9a; }
+    .empty { text-align: center; padding: 40px; color: #aaa; }
+    .logout-btn { font-size: 0.78rem; color: rgba(255,255,255,0.6); background: none; border: 1px solid rgba(255,255,255,0.3); border-radius: 4px; padding: 3px 8px; cursor: pointer; margin-left: auto; }
+    .logout-btn:hover { color: white; border-color: white; }
+  </style>
+</head>
+<body>
+
+<div class="header" style="display:flex; align-items:flex-start; gap:12px;">
+  <div style="flex:1;">
+    <h1>Desaparecidos en listas hospitalarias</h1>
+    <p>Personas reportadas como desaparecidas que aparecen en listas de hospitales y refugios</p>
+  </div>
+  <button class="logout-btn" id="btn-cerrar" onclick="cerrarSesion()" style="display:none;">Cerrar sesión</button>
+</div>
+<div class="nav">
+  <a href="index.html">Buscar</a>
+  <a href="cruces.html" class="activo">Cruces con desaparecidos</a>
+  <a href="api/">API</a>
+</div>
+
+<!-- LOGIN -->
+<div id="pantalla-login">
+  <div class="login-card">
+    <div class="login-icono">🔒</div>
+    <h2>Acceso restringido</h2>
+    <p>Esta sección contiene información sensible de contacto y solo está disponible para el equipo autorizado.</p>
+    <div class="login-error" id="login-error">Clave incorrecta. Inténtalo de nuevo.</div>
+    <label for="clave-input">Clave de acceso</label>
+    <input type="password" id="clave-input" autofocus placeholder="Ingresa la clave..."
+           onkeydown="if(event.key==='Enter') entrar()">
+    <button id="btn-entrar" onclick="entrar()">Entrar</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="pantalla-app">
+  <div class="stats">
+    <div class="stat"><div class="num" id="stat-total">—</div><div class="label">coincidencias totales</div></div>
+    <div class="stat"><div class="num" id="stat-sin">—</div><div class="label">aún sin contacto</div></div>
+    <div class="stat"><div class="num" id="stat-loc">—</div><div class="label">localizados</div></div>
+    <div class="stat" style="margin-left:auto;" id="stat-fecha-bloque" hidden>
+      <div class="num" style="font-size:1rem;" id="stat-fecha">—</div>
+      <div class="label">última actualización de desaparecidos</div>
+    </div>
+  </div>
+
+  <div class="controles">
+    <input type="text" id="buscador" placeholder="Buscar por nombre..." oninput="filtrarYRender()">
+    <div class="filtros">
+      <span>Estado:</span>
+      <button class="btn-filtro activo" onclick="setFiltro('', this)">Todos</button>
+      <button class="btn-filtro" onclick="setFiltro('sin-contacto', this)">Sin contacto</button>
+      <button class="btn-filtro" onclick="setFiltro('localizado', this)">Localizados</button>
+      <span class="sep">|</span>
+      <span>Orden:</span>
+      <button class="btn-filtro activo" onclick="setOrden('nombre', this)">Nombre</button>
+      <button class="btn-filtro" onclick="setOrden('fecha_desc', this)">Más reciente</button>
+      <button class="btn-filtro" onclick="setOrden('fecha_asc', this)">Más antiguo</button>
+      <span class="sep">|</span>
+      <button class="btn-filtro" id="btn-tel" onclick="toggleTelefono(this)">📞 Solo con teléfono</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="aviso">
+      Coincidencias calculadas comparando nombres — puede haber personas distintas con el mismo nombre. Verifica siempre con la lista original.
+    </div>
+    <div id="resultados"></div>
+    <div class="paginacion" id="paginacion"></div>
+    <div style="text-align:center; padding-bottom:32px; font-size:0.8rem; color:#aaa;">
+      Datos de desaparecidos: <a href="https://desaparecidosterremotovenezuela.com" style="color:#aaa;">desaparecidosterremotovenezuela.com</a>
+    </div>
+  </div>
+</div>
+
+<script>
+let todos = [];
+let filtrados = [];
+let filtroEstado = '';
+let ordenActual = 'nombre';
+let soloTelefono = false;
+let pagina = 1;
+const POR_PAGINA = 50;
+
+// ── Cifrado ──────────────────────────────────────────────────────────────────
+
+async function derivarClave(password, salt) {
+  const km = await crypto.subtle.importKey(
+    'raw', new TextEncoder().encode(password), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt, iterations: 100000, hash: 'SHA-256' },
+    km, { name: 'AES-GCM', length: 256 }, false, ['decrypt']
+  );
+}
+
+async function descifrar(password, b64) {
+  const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  const salt = raw.slice(0, 16);
+  const nonce = raw.slice(16, 28);
+  const ciphertext = raw.slice(28);
+  const key = await derivarClave(password, salt);
+  const buf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: nonce }, key, ciphertext);
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+
+// ── Login ────────────────────────────────────────────────────────────────────
+
+async function entrar() {
+  const clave = document.getElementById('clave-input').value;
+  if (!clave) return;
+  const btn = document.getElementById('btn-entrar');
+  btn.disabled = true;
+  btn.textContent = 'Descifrando...';
+  document.getElementById('login-error').style.display = 'none';
+
+  try {
+    const resp = await fetch('api/cruces_enc.json');
+    const enc = await resp.json();
+    const data = await descifrar(clave, enc.data);
+    cargarDatos(data);
+    document.getElementById('pantalla-login').style.display = 'none';
+    document.getElementById('pantalla-app').style.display = 'block';
+    document.getElementById('btn-cerrar').style.display = 'block';
+    sessionStorage.setItem('cruces_clave', clave);
+  } catch {
+    document.getElementById('login-error').style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = 'Entrar';
+  }
+}
+
+function cerrarSesion() {
+  sessionStorage.removeItem('cruces_clave');
+  location.reload();
+}
+
+// ── Datos ────────────────────────────────────────────────────────────────────
+
+function cargarDatos(data) {
+  todos = data.cruces || [];
+  const fecha = data.ultima_actualizacion_desaparecidos;
+  if (fecha) {
+    document.getElementById('stat-fecha').textContent = fecha;
+    document.getElementById('stat-fecha-bloque').removeAttribute('hidden');
+  }
+  document.getElementById('stat-total').textContent = todos.length;
+  document.getElementById('stat-sin').textContent = todos.filter(x => x.estado === 'sin-contacto').length;
+  document.getElementById('stat-loc').textContent = todos.filter(x => x.estado === 'localizado').length;
+  filtrarYRender();
+}
+
+// ── Filtros ───────────────────────────────────────────────────────────────────
+
+function setFiltro(estado, btn) {
+  filtroEstado = estado;
+  document.querySelectorAll('.filtros .btn-filtro').forEach(b => {
+    if (/Todos|Sin contacto|Localizados/.test(b.textContent)) b.classList.remove('activo');
+  });
+  btn.classList.add('activo');
+  pagina = 1;
+  filtrarYRender();
+}
+
+function setOrden(orden, btn) {
+  ordenActual = orden;
+  document.querySelectorAll('.filtros .btn-filtro').forEach(b => {
+    if (/Nombre|reciente|antiguo/.test(b.textContent)) b.classList.remove('activo');
+  });
+  btn.classList.add('activo');
+  filtrarYRender();
+}
+
+function toggleTelefono(btn) {
+  soloTelefono = !soloTelefono;
+  btn.classList.toggle('activo', soloTelefono);
+  pagina = 1;
+  filtrarYRender();
+}
+
+function esMenor(c) {
+  const e = (c.edad || '').replace(/ años?/i, '').trim();
+  return e && /^\d+$/.test(e) && parseInt(e) < 18;
+}
+
+function normalizar(t) {
+  return (t || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+}
+
+function filtrarYRender() {
+  const q = normalizar(document.getElementById('buscador').value);
+  filtrados = todos.filter(c => {
+    if (filtroEstado && c.estado !== filtroEstado) return false;
+    if (q && !normalizar(c.nombre).includes(q)) return false;
+    if (soloTelefono && !c.telefono_contacto) return false;
+    return true;
+  });
+  filtrados.sort((a, b) => {
+    if (ordenActual === 'fecha_desc') return (b.fecha_lista || '').localeCompare(a.fecha_lista || '');
+    if (ordenActual === 'fecha_asc')  return (a.fecha_lista || '').localeCompare(b.fecha_lista || '');
+    return (a.nombre || '').localeCompare(b.nombre || '');
+  });
+  renderPagina();
+}
+
+// ── Render ───────────────────────────────────────────────────────────────────
+
+function renderPagina() {
+  const inicio = (pagina - 1) * POR_PAGINA;
+  const slice = filtrados.slice(inicio, inicio + POR_PAGINA);
+  const div = document.getElementById('resultados');
+
+  if (!filtrados.length) {
+    div.innerHTML = '<div class="empty">No hay coincidencias.</div>';
+    document.getElementById('paginacion').innerHTML = '';
+    return;
+  }
+
+  div.innerHTML = slice.map(c => {
+    const menor = esMenor(c);
+    const badge = c.estado === 'sin-contacto' ? '<span class="badge badge-sin">sin contacto</span>'
+                : c.estado === 'localizado'   ? '<span class="badge badge-loc">localizado</span>'
+                : c.estado === 'en-hospital'  ? '<span class="badge badge-hosp">en hospital</span>'
+                : '';
+    const badgeMenor = menor ? '<span class="badge badge-menor">menor de edad</span>' : '';
+
+    if (menor) {
+      return `
+        <div class="resultado resultado-menor">
+          <div class="nombre">${c.nombre} ${badge} ${badgeMenor}</div>
+          <div class="aviso-menor">
+            🔒 <strong>Información protegida.</strong> Esta persona es menor de edad.
+            Su ubicación y datos están ocultos para proteger su seguridad.<br>
+            Si eres familiar directo, comunícate a
+            <a href="mailto:listashospitalarias@proton.me" style="color:#e65100;font-weight:600;">listashospitalarias@proton.me</a>
+            y te orientaremos.
+          </div>
+        </div>`;
+    }
+
+    const cedula = c.cedula ? `<span>CI: ${c.cedula}</span>` : '';
+    const fechaLista = c.fecha_lista ? `<span>Lista: ${c.fecha_lista.slice(0,10)}</span>` : '';
+    const telefono = c.telefono_contacto
+      ? `<div class="detalles" style="margin-top:4px;"><span>📞 ${c.telefono_contacto}${c.nombre_contacto ? ' (' + c.nombre_contacto + ')' : ''}</span></div>`
+      : '';
+    const btnHosp = c.fuente_url
+      ? `<a href="${c.fuente_url}" target="_blank" class="btn-link btn-hosp">Ver lista hospitalaria</a>`
+      : '';
+
+    return `
+      <div class="resultado">
+        <div class="nombre">${c.nombre} ${badge}</div>
+        <div class="hospital-line">📍 ${c.hospital}</div>
+        <div class="detalles">${cedula}${fechaLista}</div>
+        ${telefono}
+        <div class="links">
+          ${btnHosp}
+          <button data-nombre="${c.nombre.replace(/"/g, '&quot;')}" onclick="buscarEnDesaparecidos(this.dataset.nombre)" class="btn-link btn-des">Buscar en desaparecidos</button>
+        </div>
+      </div>`;
+  }).join('');
+
+  const totalPags = Math.ceil(filtrados.length / POR_PAGINA);
+  const pag = document.getElementById('paginacion');
+  if (totalPags <= 1) { pag.innerHTML = ''; return; }
+  let html = '';
+  if (pagina > 1) html += `<button onclick="irPagina(${pagina-1})">← Anterior</button>`;
+  html += `<button class="activo">${pagina} / ${totalPags}</button>`;
+  if (pagina < totalPags) html += `<button onclick="irPagina(${pagina+1})">Siguiente →</button>`;
+  pag.innerHTML = html;
+}
+
+function irPagina(n) {
+  pagina = n;
+  renderPagina();
+  window.scrollTo(0, 0);
+}
+
+function buscarEnDesaparecidos(nombre) {
+  navigator.clipboard.writeText(nombre).then(() => {
+    window.open('https://desaparecidosterremotovenezuela.com', '_blank');
+    setTimeout(() => alert('El nombre "' + nombre + '" fue copiado.\nPégalo en el buscador (Ctrl+V).'), 300);
+  }).catch(() => window.open('https://desaparecidosterremotovenezuela.com', '_blank'));
+}
+
+// ── Auto-login si hay sesión guardada ────────────────────────────────────────
+
+window.addEventListener('load', async () => {
+  const clave = sessionStorage.getItem('cruces_clave');
+  if (clave) {
+    document.getElementById('clave-input').value = clave;
+    await entrar();
+  }
+});
+</script>
+</body>
+</html>

@@ -113,6 +113,38 @@
     </div>
   </div>
 
+  <div class="endpoint">
+    <div class="endpoint-header">
+      <span class="method">GET</span>
+      <span class="path">/admin/api/cruces-con-telefono</span>
+      <span class="desc">Cruces con número de teléfono — solo admins</span>
+    </div>
+    <div class="endpoint-body">
+      <div class="fields">
+        <h4>Autenticación</h4>
+        <div class="field"><span class="field-name">X-Admin-Key</span><span class="field-desc">Header requerido — clave de administrador</span></div>
+        <h4 style="margin-top:12px;">Parámetros</h4>
+        <div class="field"><span class="field-name">pendientes</span><span class="field-desc"><code>1</code> (default) — solo los que aún no han sido localizados · <code>0</code> — todos los que tienen teléfono</span></div>
+        <h4 style="margin-top:12px;">Campos devueltos</h4>
+        <div class="field"><span class="field-name">nombre</span><span class="field-desc">Nombre completo</span></div>
+        <div class="field"><span class="field-name">hospital</span><span class="field-desc">Hospital o refugio donde aparece</span></div>
+        <div class="field"><span class="field-name">fuente_url</span><span class="field-desc">URL de la lista hospitalaria original</span></div>
+        <div class="field"><span class="field-name">fecha_lista</span><span class="field-desc">Fecha de la lista</span></div>
+        <div class="field"><span class="field-name">telefono</span><span class="field-desc">Número de contacto del familiar</span></div>
+        <div class="field"><span class="field-name">nombre_contacto</span><span class="field-desc">Nombre del familiar que reportó la desaparición</span></div>
+        <div class="field"><span class="field-name">estado</span><span class="field-desc"><code>sin-contacto</code> o <code>localizado</code></span></div>
+      </div>
+      <div class="ejemplo">
+        <h4>Ejemplos</h4>
+        <div class="code"><span class="comment"># Solo los pendientes con teléfono</span>
+<span class="cmd">curl</span> -H <span class="url">"X-Admin-Key: CLAVE"</span> <span class="url">"https://listashospitalarias.pythonanywhere.com/admin/api/cruces-con-telefono"</span>
+
+<span class="comment"># Todos los que tienen teléfono</span>
+<span class="cmd">curl</span> -H <span class="url">"X-Admin-Key: CLAVE"</span> <span class="url">"https://listashospitalarias.pythonanywhere.com/admin/api/cruces-con-telefono?pendientes=0"</span></div>
+      </div>
+    </div>
+  </div>
+
   <div style="margin-top:32px; font-size:0.82rem; color:#aaa; text-align:center; line-height:1.8;">
     Datos actualizados voluntariamente · Contacto:
     <a href="mailto:listashospitalarias@proton.me" style="color:#aaa;">listashospitalarias@proton.me</a>

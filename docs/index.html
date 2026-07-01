@@ -164,7 +164,7 @@ function ejecutarBusqueda(q) {
       ? `<span class="badge-exacto">coincidencia exacta</span>`
       : `<span class="badge-aprox">resultado aproximado — verificar</span>`;
 
-    const esMenor = item.e && !isNaN(parseInt(item.e)) && parseInt(item.e) < 18;
+    const esMenor = item.p || (item.e && !isNaN(parseInt(item.e)) && parseInt(item.e) < 18);
     const badgeMenor = esMenor ? `<span class="badge-aprox" style="background:#ffebee;color:#c62828;">menor de edad</span>` : "";
 
     const cuerpo = esMenor
